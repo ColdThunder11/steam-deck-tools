@@ -39,7 +39,7 @@ namespace PerformanceOverlay
             contextMenu = new System.Windows.Forms.ContextMenuStrip(components);
 
             SharedData_Update();
-            Instance.Open(TitleWithVersion, Settings.Default.EnableKernelDrivers, "Global\\PerformanceOverlay");
+            Instance.Open(TitleWithVersion, Settings.Default.EnableKernelDrivers, "Global\\PerformanceOverlay", 500);
             Instance.RunUpdater(TitleWithVersion);
 
             if (Instance.WantsRunOnStartup)
