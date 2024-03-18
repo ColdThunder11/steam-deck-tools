@@ -38,6 +38,15 @@ namespace PowerControl.Helpers.AMD
             try
             {
                 inpOut = new InpOut();
+                //inpoutx64 driver may load failed when start with windows after a win11 update, need retry chance
+                if (!inpOut.IsInpOutDriverOpen())
+                {
+                    inpOut.ReloadLib();
+                    if (!inpOut.IsInpOutDriverOpen())
+                    {
+                        Log.TraceException("RyzenSMU", new Exception("inpoutx64 driver load failed"));
+                    }
+                }
                 mappedAddress = inpOut.MapPhysToLin(MMIO_ADDR, MMIO_SIZE, out physicalHandle);
             }
             catch (Exception e)

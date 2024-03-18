@@ -16,6 +16,8 @@ namespace CommonHelpers
         public UnmapPhysicalMemoryDelegate UnmapPhysicalMemory;
         public DlPortReadPortUcharDelegate DlPortReadPortUchar;
         public DlPortWritePortUcharDelegate DlPortWritePortUchar;
+        public IsInpOutDriverOpenDelegate IsInpOutDriverOpen;
+        
 
         public InpOut()
         {
@@ -48,6 +50,10 @@ namespace CommonHelpers
                 if (addr == IntPtr.Zero)
                     throw new ArgumentException("Missing DlPortWritePortUchar");
                 DlPortWritePortUchar = Marshal.GetDelegateForFunctionPointer<DlPortWritePortUcharDelegate>(addr);
+                addr = GetProcAddress(libraryHandle, "IsInpOutDriverOpen");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing IsInpOutDriverOpen");
+                IsInpOutDriverOpen = Marshal.GetDelegateForFunctionPointer<IsInpOutDriverOpenDelegate>(addr);
             }
             catch
             {
@@ -95,10 +101,60 @@ namespace CommonHelpers
             return false;
         }
 
+        public void ReloadLib()
+        {
+            if (libraryHandle != IntPtr.Zero)
+            {
+                FreeLibrary(libraryHandle);
+                libraryHandle = IntPtr.Zero;
+            }
+            libraryHandle = LoadLibrary(LibraryName);
+            if (libraryHandle == IntPtr.Zero)
+                throw new ArgumentException("Failed to load " + LibraryName);
+            try
+            {
+                var addr = GetProcAddress(libraryHandle, "MapPhysToLin");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing MapPhysToLin");
+                MapPhysToLin = Marshal.GetDelegateForFunctionPointer<MapPhysToLinDelegate>(addr);
+
+                addr = GetProcAddress(libraryHandle, "UnmapPhysicalMemory");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing UnmapPhysicalMemory");
+                UnmapPhysicalMemory = Marshal.GetDelegateForFunctionPointer<UnmapPhysicalMemoryDelegate>(addr);
+
+                addr = GetProcAddress(libraryHandle, "UnmapPhysicalMemory");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing UnmapPhysicalMemory");
+                UnmapPhysicalMemory = Marshal.GetDelegateForFunctionPointer<UnmapPhysicalMemoryDelegate>(addr);
+
+                addr = GetProcAddress(libraryHandle, "DlPortReadPortUchar");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing DlPortReadPortUchar");
+                DlPortReadPortUchar = Marshal.GetDelegateForFunctionPointer<DlPortReadPortUcharDelegate>(addr);
+
+                addr = GetProcAddress(libraryHandle, "DlPortWritePortUchar");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing DlPortWritePortUchar");
+                DlPortWritePortUchar = Marshal.GetDelegateForFunctionPointer<DlPortWritePortUcharDelegate>(addr);
+                addr = GetProcAddress(libraryHandle, "IsInpOutDriverOpen");
+                if (addr == IntPtr.Zero)
+                    throw new ArgumentException("Missing IsInpOutDriverOpen");
+                IsInpOutDriverOpen = Marshal.GetDelegateForFunctionPointer<IsInpOutDriverOpenDelegate>(addr);
+            }
+            catch
+            {
+                FreeLibrary(libraryHandle);
+                libraryHandle = IntPtr.Zero;
+                throw;
+            }
+        }
+
         public delegate IntPtr MapPhysToLinDelegate(IntPtr pbPhysAddr, uint dwPhysSize, out IntPtr pPhysicalMemoryHandle);
         public delegate bool UnmapPhysicalMemoryDelegate(IntPtr PhysicalMemoryHandle, IntPtr pbLinAddr);
         public delegate byte DlPortReadPortUcharDelegate(ushort port);
         public delegate byte DlPortWritePortUcharDelegate(ushort port, byte value);
+        public delegate bool IsInpOutDriverOpenDelegate();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr LoadLibrary(string lpFileName);
