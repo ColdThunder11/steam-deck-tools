@@ -22,7 +22,7 @@ namespace CommonHelpers
         private static bool useKernelDrivers;
 
         private const String GLOBAL_MUTEX_NAME = "Global\\SteamDeckToolsCommonHelpers";
-        private const int GLOBAL_DEFAULT_TIMEOUT = 20000;
+        private const int GLOBAL_DEFAULT_TIMEOUT = 30000;
 
         public static bool WantsRunOnStartup
         {
